@@ -1,0 +1,14 @@
+{
+  "name": "type-reader",
+  "version": "1.0.0",
+  "description": "A Library for displaying typewritten text on a website, in a dynamic way: changing the number of words in each line depending on the div width.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Þorvarður Bergmann Kjartansson",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "tesseract.js": "^6.0.0"
+  }
+}
