@@ -7,8 +7,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Þorvarður Bergmann Kjartansson",
-  "license": "GPL-3.0-or-later",
-  "dependencies": {
-    "tesseract.js": "^6.0.0"
-  }
+  "license": "GPL-3.0-or-later"
 }

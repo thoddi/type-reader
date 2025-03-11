@@ -1,5 +1,4 @@
-import Tesseract from './node_modules/tesseract.js/dist/tesseract.esm.min.js';
-// import Linker from './linker.js';
+import Tesseract from 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.esm.min.js';
 import TypedDocument from './document/document.js';
 
 /**
