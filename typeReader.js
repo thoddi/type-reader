@@ -41,6 +41,7 @@ class TypeReader {
         //         });
         //     });
         // }
+        
         const resizeObserver = new ResizeObserver(() => this.print());
         resizeObserver.observe(this.#img.parentElement);
     }
@@ -103,7 +104,10 @@ class TypeReader {
 
         this.#resizeCanvas(y + this.#document.lineHeight);
 
+        this.#img.style.visibility = 'hidden';
+        this.#img.style.width = this.#context.canvas.width / this.#document.scale + 'px';
         this.#img.src = this.#context.canvas.toDataURL();
+        this.#img.style.visibility = 'visible';
     }
 
     static #calculateRotationAngle(x0, y0, x1, y1) {
