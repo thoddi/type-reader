@@ -1,40 +1,6 @@
 import Tesseract from 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.esm.min.js';
 import TypedDocument from './document/document.js';
 
-/**
- * @typedef Bbox
- * @type {object}
- * @property {number} x0
- * @property {number} x1
- * @property {number} y0
- * @property {number} y1
- */
-
-/**
- * @typedef Word
- * @type {object}
- * @property {Bbox} bbox
- * @property {string} text
- * @property {Symbols} symbols
- * @property {Image} image
- * @property {Word?} next
- * @property {Word?} prev
- */
-
-/**
- * @typedef Line
- * @type {object}
- * @property {Bbox} bbox
- * @property {Bbox} baseline
- * @property {Word[]} words
- */
-
-/**
- * @typedef Symbols
- * @type {object}
- * @property {Bbox} bbox
- */
-
 class TypeReader {
     /** @type {Promise} */
     #workerPromise;
@@ -42,14 +8,14 @@ class TypeReader {
     /** @type {HTMLImageElement} */
     #img;
 
-    /** @type {CanvasRenderingContext2D} */
-    #context;
-
     /** @type {number} */
     #fontSize;
 
     /** @type {TypedDocument} */
     #document;
+
+    /** @type {CanvasRenderingContext2D} */
+    #context;
 
     constructor(imgId, fontSize) {
         this.#fontSize = fontSize;
@@ -58,14 +24,10 @@ class TypeReader {
         this.#img = document.getElementById(imgId);
         this.#img.dataset.src = this.#img.src;
         this.#img.crossOrigin = "Anonymous";
-        
-        const canvas = document.createElement('canvas');
-        canvas.height = 1000;
-        this.#context = canvas.getContext('2d')
-        if(!this.#context) {
-            throw new Error('Context missing.');
-        }
 
+        const canvas = document.createElement('canvas');
+        this.#context = canvas.getContext('2d');
+        
         // if (this.#img.dataset.data) {
         //     /** @type {Word[]} */
         //     const words = JSON.parse(this.#img.dataset.data);
@@ -84,31 +46,41 @@ class TypeReader {
     }
 
     async record() {
-        console.log('record');
         if (this.#img.dataset.data) {
             const json = atob(this.#img.dataset.data);
-            console.log(json);
             const data = JSON.parse(json);
-            console.log('result was:', data);
             this.#document = new TypedDocument(this.#img.dataset.src, data, this.#fontSize);
         }
         else {
             const worker = await this.#workerPromise;
             const { data } = await worker.recognize(this.#img.dataset.src, 'eng', { blocks: true });
             
-            console.log('result was:', data)
             this.#document = new TypedDocument(this.#img.dataset.src, data, this.#fontSize);
         }
+    }
+
+    #resizeCanvas(height) {
+        const newCanvas = document.createElement('canvas');
+        newCanvas.width = this.#context.canvas.width;
+        newCanvas.height = height;
+        const newContext = newCanvas.getContext('2d');
+
+        newContext.drawImage(this.#context.canvas, 0, 0);
+
+        this.#context = newContext;
     }
 
     async print() {
         if (this.#document === undefined) {
             return;
         }
-        console.log('print');
+        console.count('print');
+
         const parentWidth = this.#img.parentElement.offsetWidth;
         const pageWidth = parentWidth * this.#document.scale;
+
         this.#context.canvas.width = pageWidth;
+        this.#context.canvas.height = 1000;
 
         let x = 0;
         let y = 0;
@@ -116,6 +88,9 @@ class TypeReader {
             if (x + word.fullWidth > pageWidth) {
                 y += this.#document.lineHeight;
                 x = 0;
+                if (this.#context.canvas.height < y + this.#document.lineHeight) {
+                    this.#resizeCanvas(this.#context.canvas.height + 1000);
+                }
             }
             if (word.isSplit) {
                 this.#context.drawImage(await word.image, 0, 0, word.widthWithoutDash, word.height, x, y, word.widthWithoutDash, word.height);
@@ -125,7 +100,9 @@ class TypeReader {
                 x += word.width + this.#document.spaceWidth;
             }
         }
-        
+
+        this.#resizeCanvas(y + this.#document.lineHeight);
+
         this.#img.src = this.#context.canvas.toDataURL();
     }
 
@@ -144,7 +121,6 @@ class TypeReader {
     }
 
     static async print(imgId, fontSize) {
-        console.log('2')
         const reader = new TypeReader(imgId, fontSize);
         await reader.record();
         reader.print();
