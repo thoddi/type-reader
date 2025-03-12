@@ -8,9 +8,8 @@ class TypedDocument {
     /** @type {Properties} */
     #props;
 
-    constructor(imageUrl, data, fontSize) {
+    constructor(imageUrl, data) {
         this.#props = new Properties();
-        this.#props.fontSize = fontSize;
         this.#props.image = new Promise((resolve) => {
             const img = new Image();
             img.src = imageUrl;
@@ -41,6 +40,11 @@ class TypedDocument {
 
     get scale() {
         return this.#props.scale;
+    }
+
+    /** @param {number} value */
+    set fontSize(value) {
+        this.#props.fontSize = value;
     }
 
     get rawData() {

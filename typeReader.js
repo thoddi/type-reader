@@ -1,4 +1,4 @@
-import Tesseract from 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.esm.min.js';
+import Tesseract from 'https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.esm.min.js';
 import TypedDocument from './document/document.js';
 
 class TypeReader {
@@ -8,17 +8,13 @@ class TypeReader {
     /** @type {HTMLImageElement} */
     #img;
 
-    /** @type {number} */
-    #fontSize;
-
     /** @type {TypedDocument} */
     #document;
 
     /** @type {CanvasRenderingContext2D} */
     #context;
 
-    constructor(imgId, fontSize) {
-        this.#fontSize = fontSize;
+    constructor(imgId) {
         this.#workerPromise = Tesseract.createWorker('eng', 1);
 
         this.#img = document.getElementById(imgId);
@@ -28,35 +24,20 @@ class TypeReader {
         const canvas = document.createElement('canvas');
         this.#context = canvas.getContext('2d');
         
-        // if (this.#img.dataset.data) {
-        //     /** @type {Word[]} */
-        //     const words = JSON.parse(this.#img.dataset.data);
-        //     const promises = [];
-        //     words.map(word => {
-        //         const url = word.image;
-        //         word.image = new Image();
-        //         word.image.src = url;
-        //         word.image.onload(() => {
-
-        //         });
-        //     });
-        // }
-        
         const resizeObserver = new ResizeObserver(() => this.print());
         resizeObserver.observe(this.#img.parentElement);
     }
 
-    async record() {
+    async record(lang) {
         if (this.#img.dataset.data) {
             const json = atob(this.#img.dataset.data);
             const data = JSON.parse(json);
-            this.#document = new TypedDocument(this.#img.dataset.src, data, this.#fontSize);
+            this.#document = new TypedDocument(this.#img.dataset.src, data);
         }
         else {
             const worker = await this.#workerPromise;
-            const { data } = await worker.recognize(this.#img.dataset.src, 'eng', { blocks: true });
-            
-            this.#document = new TypedDocument(this.#img.dataset.src, data, this.#fontSize);
+            const { data } = await worker.recognize(this.#img.dataset.src, lang, { blocks: true });
+            this.#document = new TypedDocument(this.#img.dataset.src, data);
         }
     }
 
@@ -71,9 +52,12 @@ class TypeReader {
         this.#context = newContext;
     }
 
-    async print() {
+    async print(fontSize) {
         if (this.#document === undefined) {
             return;
+        }
+        if (fontSize) {
+            this.#document.fontSize = fontSize;
         }
         console.count('print');
 
@@ -124,14 +108,14 @@ class TypeReader {
         return angleDegrees;
     }
 
-    static async print(imgId, fontSize) {
-        const reader = new TypeReader(imgId, fontSize);
-        await reader.record();
-        reader.print();
-        const data = reader.#document.rawData;
-        const json = JSON.stringify(data);
-        console.log(btoa(json));
-    }
+    // static async print(imgId, fontSize) {
+    //     const reader = new TypeReader(imgId, fontSize);
+    //     await reader.record();
+    //     reader.print();
+    //     const data = reader.#document.rawData;
+    //     const json = JSON.stringify(data);
+    //     console.log(btoa(json));
+    // }
 }
 
-TypeReader.print('image', 20);
+export default TypeReader;
