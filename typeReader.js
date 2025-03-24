@@ -14,6 +14,8 @@ class TypeReader {
     /** @type {CanvasRenderingContext2D} */
     #context;
 
+    #data;
+
     constructor(imgId) {
         this.#workerPromise = Tesseract.createWorker('eng', 1);
 
@@ -32,11 +34,13 @@ class TypeReader {
         if (this.#img.dataset.data) {
             const json = atob(this.#img.dataset.data);
             const data = JSON.parse(json);
+            this.#data = data;
             this.#document = new TypedDocument(this.#img.dataset.src, data);
         }
         else {
             const worker = await this.#workerPromise;
             const { data } = await worker.recognize(this.#img.dataset.src, lang, { blocks: true });
+            this.#data = data;
             this.#document = new TypedDocument(this.#img.dataset.src, data);
         }
     }
@@ -108,6 +112,9 @@ class TypeReader {
         return angleDegrees;
     }
 
+    get data() {
+        return this.#data;
+    }
     // static async print(imgId, fontSize) {
     //     const reader = new TypeReader(imgId, fontSize);
     //     await reader.record();
