@@ -62,7 +62,6 @@ class Properties {
     }
 
     get commonLineHeight() {
-        console.log(this.#lineHeights);
         return this.#lineHeights.mostCommon;
     }
 
