@@ -8,7 +8,7 @@ class Block extends BaseObject {
     #paragraphs;
     constructor(block, properties) {
         super(block, properties);
-        this.#paragraphs = block.paragraphs.map(p => new Paragraph(p, properties));
+        this.#paragraphs = block.paragraphs.map((p, idx) => new Paragraph(p, properties, this, idx));
     }
 
     get paragraphs() {

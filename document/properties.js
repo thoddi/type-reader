@@ -1,13 +1,18 @@
 class Properties {
-    /** @type {Promise<Image>} */
+    /** @type {Promise<HTMLImageElement>} */
     #image;
     #spaceWidth = 0;
     #symbolWidth = 0;
     #wordHeight = 0;
     #fontSize = 0;
+    #lineHeights = {
+        frequency: {},
+        maxCount: 0,
+        mostCommon: 0
+    };
 
     /**
-     * @param {Promise<Image>} image
+     * @param {Promise<HTMLImageElement>} image
      */
     set image(image) {
         this.#image = image;
@@ -45,6 +50,20 @@ class Properties {
 
     get wordHeight() {
         return this.#wordHeight;
+    }
+
+    noteLineHeight(height) {
+        let {frequency, maxCount} = this.#lineHeights;
+        frequency[height] = (frequency[height] ?? 0) + 1;
+        if (frequency[height] > maxCount) {
+            this.#lineHeights.maxCount = frequency[height];
+            this.#lineHeights.mostCommon = height;
+        }
+    }
+
+    get commonLineHeight() {
+        console.log(this.#lineHeights);
+        return this.#lineHeights.mostCommon;
     }
 
     /**

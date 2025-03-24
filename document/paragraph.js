@@ -1,11 +1,19 @@
 import BaseObject from "./baseObject.js";
+import Block from "./block.js";
 import Line from "./line.js";
 
 class Paragraph extends BaseObject {
     /** @type {Line[]} */
     #lines;
-    constructor(paragraph, props) {
+
+    /** @type {Block} */
+    #block;
+    #index = 0;
+
+    constructor(paragraph, props, block, index) {
         super(paragraph, props);
+        this.#block = block;
+        this.#index = index;
         this.#lines = paragraph.lines.map((l, idx) => new Line(l, props, this, idx));
         this.#findSpaceWidth();
     }
@@ -17,6 +25,14 @@ class Paragraph extends BaseObject {
                 return true;
             }
         });
+    }
+
+    get next() {
+        return this.#block.paragraphs.at(this.#index + 1);
+    }
+
+    get prev() {
+        return this.#block.paragraphs[this.#index - 1];
     }
 
     get lines() {

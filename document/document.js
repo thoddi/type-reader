@@ -18,6 +18,10 @@ class TypedDocument {
             };
         });
         this.#blocks = data.blocks.map(b => new Block(b, this.#props));
+
+        this.#blocks.flatMap(b => b.paragraphs)
+                    .flatMap(p => p.lines)
+                    .forEach(l => this.#props.noteLineHeight(l.lineHeight));
     }
 
     get words() {
@@ -26,9 +30,9 @@ class TypedDocument {
                            .flatMap(l => l.words);
     }
 
-    get lineHeight() {
-        return this.#props.wordHeight;
-    }
+    // get lineHeight() {
+    //     return this.#props.wordHeight;
+    // }
 
     get spaceWidth() {
         return this.#props.spaceWidth;

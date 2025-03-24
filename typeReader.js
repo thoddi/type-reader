@@ -74,10 +74,12 @@ class TypeReader {
         let x = 0;
         let y = 0;
         for (const word of this.#document.words) {
-            if (x + word.fullWidth > pageWidth) {
-                y += this.#document.lineHeight;
+            if (x + word.fullWidth > pageWidth
+                || await word.shouldStartNewLine()
+            ) {
+                y += word.lineHeight;
                 x = 0;
-                if (this.#context.canvas.height < y + this.#document.lineHeight) {
+                if (this.#context.canvas.height < y + word.lineHeight) {
                     this.#resizeCanvas(this.#context.canvas.height + 1000);
                 }
             }
@@ -90,7 +92,7 @@ class TypeReader {
             }
         }
 
-        this.#resizeCanvas(y + this.#document.lineHeight);
+        this.#resizeCanvas(y + this.#document.words.at(-1).lineHeight);
 
         this.#img.style.visibility = 'hidden';
         this.#img.style.width = this.#context.canvas.width / this.#document.scale + 'px';

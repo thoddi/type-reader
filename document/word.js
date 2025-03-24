@@ -43,6 +43,22 @@ class Word extends BaseObject {
         return this.#line.next?.words.at(0);
     }
 
+    /** @type {Word?} */
+    get prev() {
+        const word = this.#line.words[this.#index - 1];
+        if (word) {
+            return word;
+        }
+        return this.#line.prev?.words.at(-1);
+    }
+
+    get lineHeight() {
+        if (this.#index === 0) {
+            return this.#line.lineHeight;
+        }
+        return this.props.commonLineHeight;
+    }
+
     get symbols() {
         return this.#symbols;
     }
@@ -80,6 +96,12 @@ class Word extends BaseObject {
         return (2 * this.props.symbolWidth) - this.symbols.at(-2).width - this.#next.symbols.at(0).width;
     }
 
+    async shouldStartNewLine() {
+        if (this.#index == 0 && await this.#line.prev?.shouldReturnAfterLine()) {
+            return true;
+        }
+    }
+
     get #topOffset() {
         return this.bbox.y0 - this.#line.bbox.y0
     }
@@ -88,17 +110,16 @@ class Word extends BaseObject {
      * @returns {Promise<Image>}
      */
     async #cropImage() {
-        const { x0 } = this.bbox;
-        const { y0 } = this.#line.bbox;
+        const { x0, y0 } = this.bbox;
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         canvas.width = this.width;
-        canvas.height = this.height + this.#topOffset;
+        canvas.height = this.height;
 
         // context.save();
         // context.translate(wordCanvas.width/2,wordCanvas.height/2);
         // context.rotate(angle*Math.PI/180);
-        context.drawImage(await this.props.image, x0, y0, this.width, canvas.height, 0, 0, canvas.width, canvas.height);
+        context.drawImage(await this.props.image, x0, y0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
         // context.restore();
 
         return new Promise((resolve) => {
