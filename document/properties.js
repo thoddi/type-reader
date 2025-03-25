@@ -10,6 +10,7 @@ class Properties {
         maxCount: 0,
         mostCommon: 0
     };
+    #spaceBetweenSymbols = new Map();
 
     /**
      * @param {Promise<HTMLImageElement>} image
@@ -40,6 +41,17 @@ class Properties {
 
     get symbolWidth() {
         return this.#symbolWidth;
+    }
+
+    noteSpaceBetweenSymbols(symbol1, symbol2, spaceBetween) {
+        const key = symbol1 + symbol2;
+        if(!this.#spaceBetweenSymbols.has(key)) {
+            this.#spaceBetweenSymbols.set(key, spaceBetween);
+        }
+    }
+
+    getSpaceBetweenSymbols(symbol1, symbol2) {
+        return this.#spaceBetweenSymbols.get(symbol1+symbol2);
     }
 
     noteWordHeight(height) {
