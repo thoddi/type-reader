@@ -74,3 +74,33 @@ reader.print(20);
 console.log(reader.data);
 console.log(btoa(reader.data));
 drawResult(reader.data);
+
+function hyphenateWord(word) {
+    const vowels = ['a', 'e', 'i', 'o', 'u', 'y'];
+    
+    // Find an appropriate split point
+    for (let i = 1; i < word.length - 1; i++) {
+        if (vowels.includes(word[i]) && !vowels.includes(word[i - 1])) {
+            // Split after a consonant followed by a vowel
+            return [word.slice(0, i + 1) + '-', word.slice(i + 1)];
+        }
+    }
+    
+    // If no good split point is found, return the word as is
+    return [word];
+}
+
+function hyphenateIcelandicWord(word) {
+    const vowels = ['a', 'e', 'i', 'o', 'u', 'y', 'á', 'é', 'í', 'ó', 'ú', 'ý', 'ö', 'æ', 'ø'];
+    
+    // Find an appropriate split point
+    for (let i = 1; i < word.length - 1; i++) {
+        if (vowels.includes(word[i]) && !vowels.includes(word[i - 1])) {
+            // Split after a consonant followed by a vowel
+            return [word.slice(0, i + 1) + '-', word.slice(i + 1)];
+        }
+    }
+    
+    // If no good split point is found, return the word as is
+    return [word];
+}
