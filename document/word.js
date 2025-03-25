@@ -33,8 +33,14 @@ class Word extends BaseObject {
         this.#line = line;
         this.#index = index;
         this.#image = this.#cropImage();
+
+        for(let i = 1; i < this.#text.length; i++) {
+            const space = this.#symbols[i].bbox.x0 - this.#symbols[i-1].bbox.x1;
+            props.noteSpaceBetweenSymbols(this.#text[i-1], this.#text[i], space);
+        }
     }
 
+    /** @returns {Word} */
     get #next() {
         const word = this.#line.words.at(this.#index + 1);
         if (word) {
@@ -72,7 +78,7 @@ class Word extends BaseObject {
     }
 
     get isSplit() {
-        return this.#text.endsWith('-')
+        return this.#text.endsWith('-') && !this.#text.endsWith('--');
     }
 
     get widthWithoutDash() {
@@ -92,6 +98,10 @@ class Word extends BaseObject {
     get spaceBetweenSplitWords() {
         if (this.isSplit === false) {
             return 0;
+        }
+        const space = this.props.getSpaceBetweenSymbols(this.text.at(-2), this.#next.text.at(0));
+        if (space) {
+            return space;
         }
         return (2 * this.props.symbolWidth) - this.symbols.at(-2).width - this.#next.symbols.at(0).width;
     }
@@ -122,6 +132,20 @@ class Word extends BaseObject {
         context.drawImage(await this.props.image, x0, y0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
         // context.restore();
 
+        
+        /**
+         * Draws rect and baseline for the word. (for debugging)
+         */
+        // const distance = this.getBaseLineOffset();
+        // context.strokeWidth = 2;
+		// context.strokeStyle = 'red';
+		// context.strokeRect(0, 0, canvas.width,canvas.height);
+        // context.strokeStyle = 'green';
+        // context.beginPath();
+        // context.moveTo(0, -1 * distance);
+        // context.lineTo(canvas.width, -1 * distance);
+        // context.stroke();
+
         return new Promise((resolve) => {
             const img = new Image();
             img.src = canvas.toDataURL();
@@ -136,6 +160,27 @@ class Word extends BaseObject {
             text: this.text,
             bbox: this.bbox.rawData,
             symbols: this.symbols.map(s => s.rawData),
+        }
+    }
+
+    getBaseLineOffset() {
+        const rect = this.bbox;
+        const line = this.#line.baseLine;
+        const rectBottomY = rect.y0; // Bottom of the rectangle
+        const lineSlope = (line.y1 - line.y0) / (line.x1 - line.x0); // Slope of the line
+        const rectBottomX = rect.x0; // The x-coordinate to check on the line
+
+        // Check if the rectangle's x-coordinate falls within the line's range
+        if (rectBottomX >= Math.min(line.x0, line.x1) && rectBottomX <= Math.max(line.x0, line.x1)) {
+            // Find the y-coordinate on the line at rect.x0
+            const lineY = line.y0 + lineSlope * (rectBottomX - line.x0);
+
+            // Calculate the vertical distance
+            const verticalDistance = rectBottomY - lineY;
+
+            return verticalDistance; // Positive if rect is above, negative if rect is below
+        } else {
+            return null; // No valid intersection in the horizontal range
         }
     }
 }

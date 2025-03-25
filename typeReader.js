@@ -72,7 +72,7 @@ class TypeReader {
         this.#context.canvas.height = 1000;
 
         let x = 0;
-        let y = 0;
+        let y = this.#document.words[0].lineHeight;
         for (const word of this.#document.words) {
             if (x + word.fullWidth > pageWidth
                 || await word.shouldStartNewLine()
@@ -84,10 +84,10 @@ class TypeReader {
                 }
             }
             if (word.isSplit) {
-                this.#context.drawImage(await word.image, 0, 0, word.widthWithoutDash, word.height, x, y, word.widthWithoutDash, word.height);
+                this.#context.drawImage(await word.image, 0, 0, word.widthWithoutDash, word.height, x, y + word.getBaseLineOffset(), word.widthWithoutDash, word.height);
                 x += word.widthWithoutDash + word.spaceBetweenSplitWords;
             } else {
-                this.#context.drawImage(await word.image, x, y);
+                this.#context.drawImage(await word.image, x, y + word.getBaseLineOffset());
                 x += word.width + this.#document.spaceWidth;
             }
         }
